@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { experiments } from "@/lib/lab/registry";
-import ExperimentCard from "@/components/ExperimentCard";
+import LabGallery from "@/components/LabGallery";
 
 export const metadata: Metadata = {
   title: "Lab | WorldWideWoo",
@@ -20,19 +19,10 @@ export default function LabPage() {
           WorldWideWoo
         </Link>
         <h1 className="text-lg text-white/80 mt-1">Lab</h1>
-        <p className="text-xs text-white/35 mt-1">
-          {experiments.length} experiments
-        </p>
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {experiments
-          .sort((a, b) => b.date.localeCompare(a.date))
-          .map((exp) => (
-            <ExperimentCard key={exp.slug} experiment={exp} />
-          ))}
-      </div>
+      <LabGallery />
     </div>
   );
 }

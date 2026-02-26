@@ -1,12 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { LabExperiment } from "@/lib/lab/types";
+import CanvasPreview from "./CanvasPreview";
 
 interface ExperimentCardProps {
   experiment: LabExperiment;
 }
 
 export default function ExperimentCard({ experiment }: ExperimentCardProps) {
-  const { slug, title, description, tags, thumbnail } = experiment;
+  const { slug, title, description, tags, createEngine } = experiment;
 
   return (
     <Link href={`/lab/${slug}`} className="group block">
@@ -15,19 +18,9 @@ export default function ExperimentCard({ experiment }: ExperimentCardProps) {
                     transition-all duration-300
                     group-hover:border-white/20 group-hover:bg-white/[0.06]"
       >
-        {/* Thumbnail - fixed 4:3 ratio */}
-        <div className="relative w-full bg-black/50" style={{ aspectRatio: "4/3" }}>
-          {thumbnail ? (
-            <img
-              src={thumbnail}
-              alt={title}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white/10 text-xs tracking-wider">NO PREVIEW</span>
-            </div>
-          )}
+        {/* Live canvas preview - 4:3 ratio */}
+        <div className="relative w-full bg-black" style={{ aspectRatio: "4/3" }}>
+          <CanvasPreview createEngine={createEngine} />
         </div>
 
         {/* Info */}
