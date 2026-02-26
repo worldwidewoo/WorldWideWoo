@@ -12,7 +12,7 @@
 - **Styling**: Tailwind CSS
 - **Rendering**: Canvas API (HTML5 Canvas, no WebGL required)
 - **Deployment**: Vercel
-- **Domain**: 추후 구매 예정 (우선 xxx.vercel.app)
+- **Domain**: world-wide-woo.vercel.app
 
 ## Architecture
 
@@ -39,29 +39,70 @@ interface GenerativeEngine {
 ```
 / (랜딩페이지)
 ├── 전체 화면 제너러티브 아트 캔버스
-├── 좌측 하단: "WorldWideWoo" 타이틀 (미니멀)
+├── 좌측 하단: "WorldWideWoo" 타이틀 + Lab 링크
 ├── 우측 하단: 버전 토글 버튼 (v1 / v2 / v3)
 └── 마우스/터치 인터랙션으로 아트에 영향
+
+/lab (비주얼 코딩 아카이브)
+├── 반응형 그리드 갤러리 (실험 카드 나열)
+├── 카드 클릭 → /lab/[slug] 개별 실험 페이지
+└── 개별 실험: 캔버스(비율 유지) + 메타데이터 + 풀스크린
 ```
 
-### File Structure (Target)
+### Lab 시스템 (실험 아카이브)
+
+OpenProcessing 스타일의 비주얼 코딩 실험 아카이브.
+
+**새 실험 추가 방법:**
+1. `lib/engines/`에 엔진 파일 생성 (GenerativeEngine 구현)
+2. `lib/lab/registry.ts`에 메타데이터 등록
+
+**데이터 모델:**
+```typescript
+interface LabExperiment {
+  slug: string;              // URL 식별자
+  title: string;             // 표시 이름
+  description: string;       // 짧은 설명
+  date: string;              // ISO 날짜
+  tags: string[];            // 태그 목록
+  aspectRatio: AspectRatio;  // 캔버스 비율 (1:1, 16:9, 4:3 등)
+  thumbnail?: string;        // 정적 썸네일 경로
+  createEngine: () => GenerativeEngine;
+}
+```
+
+### File Structure
 
 ```
 WorldWideWoo/
 ├── app/
 │   ├── layout.tsx          # 루트 레이아웃 (메타데이터, 폰트)
-│   └── page.tsx            # 랜딩페이지 (캔버스 + UI 오버레이)
+│   ├── page.tsx            # 랜딩페이지 (캔버스 + UI 오버레이)
+│   └── lab/
+│       ├── layout.tsx      # Lab 레이아웃 (스크롤 허용)
+│       ├── page.tsx        # 갤러리 페이지 (그리드)
+│       └── [slug]/
+│           └── page.tsx    # 개별 실험 페이지
 ├── components/
-│   ├── Canvas.tsx           # 메인 캔버스 컨테이너
+│   ├── Canvas.tsx           # 랜딩페이지 전체화면 캔버스
+│   ├── LabCanvas.tsx        # Lab 컨테이너 기반 캔버스 (비율 유지)
+│   ├── ExperimentCard.tsx   # 갤러리 카드
+│   ├── ExperimentDetail.tsx # 디테일 뷰
 │   ├── VersionToggle.tsx    # 버전 전환 토글 UI
 │   └── Overlay.tsx          # 타이틀 + UI 오버레이
 ├── lib/
 │   ├── engines/
 │   │   ├── types.ts         # 공통 엔진 인터페이스
-│   │   ├── gameOfLife.ts    # v1: Conway's Game of Life
-│   │   ├── flowField.ts    # v2: Flow Field (Perlin noise)
-│   │   └── reactionDiffusion.ts  # v3: Reaction-Diffusion
-│   └── noise.ts             # Perlin noise 구현 (v2용)
+│   │   ├── gameOfLife.ts    # Conway's Game of Life
+│   │   ├── flowField.ts    # Flow Field (Perlin noise)
+│   │   └── reactionDiffusion.ts  # Reaction-Diffusion
+│   ├── lab/
+│   │   ├── types.ts         # LabExperiment 인터페이스, AspectRatio
+│   │   └── registry.ts     # 실험 등록부
+│   └── noise.ts             # Perlin noise 구현
+├── public/
+│   ├── favicon.svg
+│   └── lab/                 # 실험 썸네일 이미지
 ├── CLAUDE.md
 ├── TODO.md
 └── docs/
@@ -104,8 +145,14 @@ npm run start    # 프로덕션 서버
 npm run lint     # ESLint
 ```
 
+## Deployment
+
+- **GitHub**: github.com/worldwidewoo/WorldWideWoo
+- **Vercel**: world-wide-woo.vercel.app (main 브랜치 자동 배포)
+
 ## Future Plans
 
+- Lab에 새로운 비주얼 코딩 실험 지속 추가
 - 포트폴리오 섹션 (/projects)
 - 블로그 (MDX 기반, /blog)
 - 비공개 섹션 (비밀번호 보호, /private)

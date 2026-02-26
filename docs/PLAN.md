@@ -120,3 +120,56 @@ interface GenerativeEngine {
 - 현재 캔버스 fade out (opacity 0, 0.5s)
 - 엔진 교체 (destroy → init)
 - 새 캔버스 fade in (opacity 1, 0.5s)
+
+---
+
+## Lab 시스템 (비주얼 코딩 아카이브)
+
+OpenProcessing 스타일의 개인 비주얼 코딩 실험 아카이브. 다양한 제너러티브 아트 실험을 연구하고 모아놓는 작업 공간.
+
+### 아키텍처
+
+**중앙 등록부 (Registry)** 방식:
+- `lib/lab/registry.ts`에 모든 실험의 메타데이터 + 엔진 팩토리를 등록
+- 새 실험 추가 = 엔진 파일 생성 + registry에 한 줄 추가
+- 라우트/컴포넌트 자동 연결 (추가 작업 불필요)
+
+**라우팅:**
+- `/lab` — 갤러리 그리드 (모든 실험 카드)
+- `/lab/[slug]` — 개별 실험 전체 뷰 (캔버스 + 메타데이터)
+- `generateStaticParams`로 정적 생성
+
+### 데이터 모델
+
+```typescript
+interface LabExperiment {
+  slug: string;           // URL 식별자: "game-of-life"
+  title: string;          // "Conway's Game of Life"
+  description: string;    // 1-2문장 설명
+  date: string;           // "2025-02-25"
+  tags: string[];         // ["cellular-automata", "simulation"]
+  aspectRatio: AspectRatio; // "16:9" | "1:1" | "4:3" 등
+  thumbnail?: string;     // "/lab/game-of-life.png" (선택사항)
+  createEngine: () => GenerativeEngine;
+}
+```
+
+### 화면비율 처리
+- 각 실험이 `aspectRatio` 선언
+- 갤러리: 썸네일은 통일된 4:3 비율로 크롭 → 깔끔한 그리드
+- 디테일: 뷰포트 안에서 선언된 비율 유지하며 최대 크기 표시
+
+### 컴포넌트
+
+**LabCanvas** (기존 Canvas.tsx와 분리):
+- ResizeObserver로 컨테이너 크기 감지
+- aspectRatio에 맞춰 캔버스 크기 계산 (fit-within)
+- getBoundingClientRect 기준 상대 좌표 변환
+
+**ExperimentCard**: 갤러리 카드 (썸네일 + 메타데이터)
+**ExperimentDetail**: 디테일 뷰 (캔버스 + 메타 + 네비게이션 + 풀스크린)
+
+### 기술 고려사항
+- `createEngine` 함수는 직렬화 불가 → slug만 서버에서 전달, 클라이언트에서 registry 조회
+- 썸네일: 정적 PNG (public/lab/), 없으면 다크 플레이스홀더
+- 메모리 관리: 페이지 이동 시 engine.destroy() + cancelAnimationFrame 호출
